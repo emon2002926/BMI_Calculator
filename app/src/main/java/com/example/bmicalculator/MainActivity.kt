@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.Room
 import com.example.bmicalculator.databinding.ActivityMainBinding
+import com.example.bmicalculator.db.UserDatabase
+import com.example.bmicalculator.models.User
 import com.example.bmicalculator.models.UserData
 import com.example.bmicalculator.viewModel.BmiResultViewModel
 
@@ -13,7 +16,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val viewModel: BmiResultViewModel by  viewModels()
-
     private val dropDownLayout = R.layout.item_list
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,39 +26,10 @@ class MainActivity : AppCompatActivity() {
         setupGenderDropDown()
         setupHeightDropDown()
         setupWeightDropDown()
-
-        binding.calculateBmiBtn.setOnClickListener { getUserInfo() }
-
-    }
-
-    private fun setupGenderDropDown() {
-        val adapter = ArrayAdapter(this, dropDownLayout, viewModel.genderOptions)
-        binding.autoCompleteGender.setAdapter(adapter)
-    }
-
-    private fun setupHeightDropDown() {
-        val adapter = ArrayAdapter(this, dropDownLayout,viewModel.heightFormats)
-        with(binding){
-            autoCompleteHeightFormat.setAdapter(adapter)
-            autoCompleteHeightFormat.setOnItemClickListener { _, _, position, _ ->
-                val format = adapter.getItem(position)
-                binding.editTextHeight.hint = if (format == "ft") "5.7$format" else "173$format"
-            }
-        }
+        binding.calculateBmiBtn.setOnClickListener {getUserInfo()}
 
     }
 
-    private fun setupWeightDropDown() {
-        val adapter = ArrayAdapter(this,dropDownLayout, viewModel.weightFormats)
-        with(binding){
-            autoCompleteWeightFormat.setAdapter(adapter)
-            autoCompleteWeightFormat.setOnItemClickListener { _, _, position, _ ->
-                val format = adapter.getItem(position)
-                binding.editTextWeight.hint = if (format == "kg") "82$format" else "180$format"
-            }
-        }
-
-    }
 
     private fun getUserInfo() {
 
@@ -105,19 +78,61 @@ class MainActivity : AppCompatActivity() {
                     bmiScore
                 )
                 putExtra("USER_INFO",userData)
-
             }
 
+            val db = Room.databaseBuilder(applicationContext,
+                UserDatabase::class.java,"User_Info").
+                allowMainThreadQueries().build()
+
+            val dao = db.getUserDao()
+            val userInfo = User(0,height,weight,gender,age,bmiScore)
+            dao.addUser(userInfo)
+
+            setViewToNull()
             startActivity(intent)
 
-            editTextHeight.text.clear()
-            editTextWeight.text.clear()
-            editTextAge.text.clear()
-            autoCompleteGender.setText("")
-            autoCompleteHeightFormat.setText("")
-            autoCompleteWeightFormat.setText("")
+
 
         }
+    }
+
+    private fun setupGenderDropDown() {
+        val adapter = ArrayAdapter(this, dropDownLayout, viewModel.genderOptions)
+        binding.autoCompleteGender.setAdapter(adapter)
+    }
+
+    private fun setupHeightDropDown() {
+        val adapter = ArrayAdapter(this, dropDownLayout,viewModel.heightFormats)
+        with(binding){
+            autoCompleteHeightFormat.setAdapter(adapter)
+            autoCompleteHeightFormat.setOnItemClickListener { _, _, position, _ ->
+                val format = adapter.getItem(position)
+                binding.editTextHeight.hint = if (format == "ft") "5.7$format" else "173$format"
+            }
+        }
+
+    }
+
+    private fun setupWeightDropDown() {
+        val adapter = ArrayAdapter(this,dropDownLayout, viewModel.weightFormats)
+        with(binding){
+            autoCompleteWeightFormat.setAdapter(adapter)
+            autoCompleteWeightFormat.setOnItemClickListener { _, _, position, _ ->
+                val format = adapter.getItem(position)
+                binding.editTextWeight.hint = if (format == "kg") "82$format" else "180$format"
+            }
+        }
+
+    }
+
+
+    fun setViewToNull()= with(binding){
+        editTextHeight.text.clear()
+        editTextWeight.text.clear()
+        editTextAge.text.clear()
+        autoCompleteGender.setText("")
+        autoCompleteHeightFormat.setText("")
+        autoCompleteWeightFormat.setText("")
     }
 
 

@@ -7,7 +7,7 @@ import coil.load
 import com.example.bmicalculator.databinding.ItemFoodArticlePreviewBinding
 import com.example.bmicalculator.models.Food
 
-class FoodApter(private val item:List<Food>): RecyclerView.Adapter<FoodApter.TodoViewHolder>() {
+class FoodApter(private val item: List<Food>): RecyclerView.Adapter<FoodApter.TodoViewHolder>() {
     inner class TodoViewHolder( var binding : ItemFoodArticlePreviewBinding): RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
